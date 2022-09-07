@@ -4,6 +4,7 @@ class MovieFinder extends React.Component {
       this.state = {
         searchTerm: '',
         results: [],
+        error: '',
       };
   
       this.handleChange = this.handleChange.bind(this);
@@ -21,23 +22,37 @@ class MovieFinder extends React.Component {
       if (!searchTerm) {  
         return;  
       }
-    
-      // make the AJAX request to OMDBAPI to get a list of results
-      fetch(`https://www.omdbapi.com/?s=${searchTerm}&apikey=b7da8d63`)
-      .then((response) => {
+      
+      const checkStatus = (response) => {
         if (response.ok) {
-          return response.json();
+          // .ok returns true if response status is 200-299
+          return response;
         }
         throw new Error('Request was either a 404 or 500');
-      }).then((data) => {
-        this.setState({ results: data.Search });
-      }).catch((error) => {
-        console.log(error);
-      })
+      }
+      
+      const json = (response) => response.json()
+      
+      fetch(`https://www.omdbapi.com/?s=${searchTerm}&apikey=b7da8d63`)
+        .then(checkStatus)
+        .then(json)
+        .then(data => {
+          if (data.Response === 'False') {
+            throw new Error(data.Error);
+          }
+      
+          if (data.Response === 'True' && data.Search) {
+            this.setState({ results: data.Search, error: '' });
+          }
+        })
+        .catch(error => {
+          this.setState({ error: error.message });
+          console.log(error);
+        })
     }
   
     render() {
-      const { searchTerm, results } = this.state;  // ES6 destructuring
+      const { searchTerm, results, error } = this.state;
   
       return (
         <div className="container">
@@ -53,9 +68,14 @@ class MovieFinder extends React.Component {
                 />
                 <button type="submit" className="btn btn-primary">Submit</button>
               </form>
-              {results.map((movie) => {
-                return <Movie key={movie.imdbID} movie={movie} />;
-              })}
+              {(() => {
+                if (error) {
+                  return error;
+                }
+                return results.map((movie) => {
+                  return <Movie key={movie.imdbID} movie={movie} />;
+                })
+              })()}
             </div>
           </div>
         </div>
