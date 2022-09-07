@@ -32,6 +32,8 @@ var MovieFinder = function (_React$Component) {
   }, {
     key: 'handleSubmit',
     value: function handleSubmit(event) {
+      var _this2 = this;
+
       event.preventDefault();
       var searchTerm = this.state.searchTerm;
 
@@ -47,7 +49,7 @@ var MovieFinder = function (_React$Component) {
         }
         throw new Error('Request was either a 404 or 500');
       }).then(function (data) {
-        console.log(data);
+        _this2.setState({ results: data.Search });
       }).catch(function (error) {
         console.log(error);
       });
@@ -85,7 +87,7 @@ var MovieFinder = function (_React$Component) {
               )
             ),
             results.map(function (movie) {
-              return null; // returns nothing for now
+              return React.createElement(Movie, { key: movie.imdbID, movie: movie });
             })
           )
         )
@@ -95,5 +97,49 @@ var MovieFinder = function (_React$Component) {
 
   return MovieFinder;
 }(React.Component);
+
+var Movie = function Movie(props) {
+  var _props$movie = props.movie,
+      Title = _props$movie.Title,
+      Year = _props$movie.Year,
+      imdbID = _props$movie.imdbID,
+      Type = _props$movie.Type,
+      Poster = _props$movie.Poster;
+
+
+  return React.createElement(
+    'div',
+    { className: 'row' },
+    React.createElement(
+      'div',
+      { className: 'col-4 col-md-3 mb-3' },
+      React.createElement(
+        'a',
+        { href: 'https://www.imdb.com/title/' + imdbID + '/', target: '_blank' },
+        React.createElement('img', { src: Poster, className: 'img-fluid' })
+      )
+    ),
+    React.createElement(
+      'div',
+      { className: 'col-8 col-md-9 mb-3' },
+      React.createElement(
+        'a',
+        { href: 'https://www.imdb.com/title/' + imdbID + '/', target: '_blank' },
+        React.createElement(
+          'h4',
+          null,
+          Title
+        ),
+        React.createElement(
+          'p',
+          null,
+          Type,
+          ' | ',
+          Year
+        )
+      )
+    )
+  );
+};
 
 ReactDOM.render(React.createElement(MovieFinder, null), document.getElementById('root'));
